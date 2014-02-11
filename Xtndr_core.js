@@ -1,8 +1,6 @@
 ;(function(win, doc, undefined) {
 	'use strict';
 
-	var Xtndr, xType;
-
 //-------------------------------------------
 // Main
 //-------------------------------------------	
@@ -11,8 +9,9 @@
 		var type;
 
 		type = Xtndr.type(something);
+		type = type[0].toUpperCase;
 
-		return new Xtndr.xType[type](something);
+		return new Xtndr[type](something);
 	};
 
 	Xtndr.isNice = true;
@@ -88,7 +87,7 @@
 			}
 
 			// qryStr
-			urlObj.qryStr = new X.xType.string(partA).toObj();
+			urlObj.qryStr = new X.S(partA).toObj();
 		}
 
 		return urlObj;
@@ -98,7 +97,7 @@
 // Types
 //-------------------------------------------
 
-	Xtndr.xType = {
+	Xtndr.xType = {};
 /* 
  %%  %%  %%  %%  %%   %%  %%%%%   %%%%%%  %%%%%  
  %%% %%  %%  %%  %%% %%%  %%  %%  %%      %%  %% 
@@ -106,92 +105,92 @@
  %%  %%  %%  %%  %%   %%  %%  %%  %%      %%  %% 
  %%  %%   %%%%   %%   %%  %%%%%   %%%%%%  %%  %% 
  */
-		number : (function () {
 
-			function XN (num) {
-				/* Deal Breaker */ if (win.isNaN(num)) {return null;}
+	Xtndr.N : (function () {
+
+		var proto = XN.prototype;
+			
+		proto.X = function (i) {
+			var str   = '' + this[0];
+			var digit = str[i];
+
+			return (digit) ? new X.N(digit) : null;
+		};
+
+		proto.addCommas = function() {
+			var str, arr, index, max;
+
+			var num = this[0];
+
+			str = '' + num;
+
+			if (str.length > 3) {
+				arr   = str.split('');
+				index = -3;
+				max   = arr.length;
 				
-				this.Xtndr = true;
-				this[0]    = num;
+				while (max + index >= 0) {
+					arr.splice(index, 0, ',');
 
-				return this;
+					// include the comma + the last 3 digits
+					index -= 4;
+				}
+
+				return arr.join('');
 			}
 
-			var proto = XN.prototype;
-				
-			proto.X = function (i) {
-				var str   = '' + this[0];
-				var _char = str[i];
+			return str;
+		};
 
-				return (_char) ? new X.xType.number(_char) : null;
-			};
+		proto.isBetween = function (x, y, include) {
+			var num = this[0];
+			
+			if (include) {
+				if (num >= x && num <= y) {
+					return true;
+				}
+			}
+			else {
+				if (num > x && num < y) {
+					return true;
+				}
+			}
+			return false;
+		};
 
-			proto.addCommas = function() {
-				var str, arr, index, max;
+		proto.pad = function (totalLength, with_) {
+			var needed;
+			var pad = '';
+			var str = '' + this[0];
+			var len = str.length;
+			
+			totalLength = totalLength || 2;
+			with_       = (with_) ? ('' + with_) : '0';
 
-				var num = this[0];
+			if (len < totalLength) {
+				needed = (totalLength - len) / with_.length;
+				needed = win.parseInt(needed, 10);
 
-				str = '' + num;
-
-				if (str.length > 3) {
-					arr   = str.split('');
-					index = -3;
-					max   = arr.length;
-					
-					while (max + index >= 0) {
-						arr.splice(index, 0, ',');
-
-						// include the comma + the last 3 digits
-						index -= 4;
-					}
-
-					return arr.join('');
+				while (needed--) {
+					pad += with_;
 				}
 
-				return str;
-			};
+				str = pad + str;
+			}
+			
+			return str;
+		};
 
-			proto.isBetween = function (x, y, include) {
-				var num = this[0];
-				
-				if (include) {
-					if (num >= x && num <= y) {
-						return true;
-					}
-				}
-				else {
-					if (num > x && num < y) {
-						return true;
-					}
-				}
-				return false;
-			};
+		return function (num) {
+			/* Deal Breaker */ if (win.isNaN(num)) {return null;}
+			
+			this.Xtndr = true;
+			this[0]    = num;
 
-			proto.pad = function (totalLength, with_) {
-				var needed;
-				var pad = '';
-				var str = '' + this[0];
-				var len = str.length;
-				
-				totalLength = totalLength || 2;
-				with_       = (with_) ? ('' + with_) : '0';
+			return this;
+		};
+	})(); // number
 
-				if (len < totalLength) {
-					needed = (totalLength - len) / with_.length;
-					needed = win.parseInt(needed, 10);
-
-					while (needed--) {
-						pad += with_;
-					}
-
-					str = pad + str;
-				}
-				
-				return str;
-			};
-
-			return XN;
-		})(), // number
 /* 
   %%%%   %%%%%%  %%%%%   %%%%%%  %%  %%   %%%%  
  %%        %%    %%  %%    %%    %%% %%  %%     
@@ -199,270 +198,270 @@
      %%    %%    %%  %%    %%    %%  %%  %%  %% 
   %%%%     %%    %%  %%  %%%%%%  %%  %%   %%%%  
  */
-		string : (function () {
 
-			function XS (str) {
-				this.Xtndr = true;
-				this[0]    = str;
-				this.len   = str.length;
+	Xtndr.S : (function () {
 
-				return this;
+		var X        = Xtndr;
+		var type     = X.type;
+		var proto    = XS.prototype;
+		
+		var _helpers = {
+			rgx2str: function (regex) {
+				regex = regex.toString().replace(/\//g, '');
+				return regex;
+			}
+		};
+
+		proto.X = function (i) {
+			var str   = this[0];
+			var _char = str[i];
+
+			return (_char) ? new X.S(_char) : null;
+		};
+
+		proto.forEach = function (fn) {
+			var str   = this[0];
+			var split = str.split('');
+
+			split.forEach(function(char, i){
+				fn.call(this, char, i);
+			});
+
+			return this;
+		};
+
+		proto.first = function (num) {
+			var str = this[0];
+			num     = num || 1;
+			str     = str.substr(0, num);
+
+			return str;
+		};
+
+		proto.last = function (num) {
+			var negativeNum;
+			var str = this[0];
+			
+			negativeNum = Math.abs(num || 1) * -1;
+
+			return str.substr(negativeNum);
+		};
+
+		proto.toInt = function () {
+			var Win = win;
+			var str = this[0];
+			var num = Win.parseInt(str, 10);
+
+			if (Win.isNaN(num)) {
+				str = str.replace(/\D/g, '');
+				num = Win.parseInt(str, 10);
 			}
 
-			var X        = Xtndr;
-			var type     = X.type;
-			var proto    = XS.prototype;
+			return (!Win.isNaN(num)) ? num : null;
+		};
+
+		proto.cut = function (head, tail) {
+			var str = this[0];
+
+			if (typeof head === 'undefined') {
+				return str.substring(1, str.length-1);
+			}
 			
-			var _helpers = {
-				rgx2str: function (regex) {
-					regex = regex.toString().replace(/\//g, '');
-					return regex;
-				}
-			};
+			if (head) {
+				str = str.substr(head);
+			}
 
-			proto.X = function (i) {
-				var str   = this[0];
-				var _char = str[i];
+			if (tail) {
+				str = str.substr(0, str.length-tail);
+			}
 
-				return (_char) ? new X.xType.string(_char) : null;
-			};
+			return str;
+		};
 
-			proto.forEach = function (fn) {
-				var str   = this[0];
-				var split = str.split('');
+		proto.trim = function (head, tail) {
+			var xStr,
+				headLen,
+				tailLen,
+				tailType,
+				rgx
+			;
 
-				split.forEach(function(char, i){
-					fn.call(this, char, i);
+			var headType  = type(head);
+			var str       = this[0];
+			var done_both = 0;
+			var rgxStr    = '';
+
+			/* Deal Breaker */ if (headType === 'undefined') {return null;}
+
+			// pass 1 pattern for both
+			if (tail === true) {
+				tail = head;
+			}
+
+			// head is a string
+			if (headType === 'string') {
+				headLen = head.length;
+				str = (this.first(headLen) === head) && this.cut(headLen);
+
+				done_both += 1;
+			}
+			else if (headType === 'regexp') {
+				head = _helpers.rgx2str(head);
+			}
+
+			tailType = type(tail);
+
+			// tail is a string
+			if (tailType === 'string') {
+				tailLen = tail.length;
+				xStr = new X.S(str);
+				str  = (xStr.last(tailLen) === tail) && xStr.cut(0, tailLen);
+
+				done_both += 1;
+			}
+			else if (tailType === 'regexp') {
+				tail = _helpers.rgx2str(tail);
+			}
+
+			// done. both are strings
+			if (done_both === 2) {
+				return str;
+			}
+
+			// add ^___|___$ where necessary
+			rgxStr += (head) ? ('^' + head)       : '';
+			rgxStr += (head) ? ('|' + tail + '$') : (tail + '$');
+
+			// rgxStr to rgx
+			rgx = new RegExp(rgxStr, 'g');
+
+			return str.replace(rgx, '');
+		};
+
+		proto.isIn = function (here) {
+			var hereType = type(here);
+
+			if (hereType === 'array') {
+				return (here.indexOf(this[0]) > -1);
+			}
+			else if (hereType === 'string') {
+				return (here.indexOf(this[0]) > -1);
+			}
+
+			return null;
+		};
+
+		proto.cap = function (wordSplit) {
+			var strArr;
+			var str    = this[0];
+			var newStr = '';
+
+			if (wordSplit) {
+				strArr = str.split(wordSplit);
+				
+				strArr.forEach(function (word) {
+					newStr += new X.S(word).cap() + wordSplit;
 				});
 
-				return this;
-			};
-
-			proto.first = function (num) {
-				var str = this[0];
-				num     = num || 1;
-				str     = str.substr(0, num);
-
-				return str;
-			};
-
-			proto.last = function (num) {
-				var negativeNum;
-				var str = this[0];
-				
-				negativeNum = Math.abs(num || 1) * -1;
-
-				return str.substr(negativeNum);
-			};
-
-			proto.toInt = function () {
-				var Win = win;
-				var str = this[0];
-				var num = Win.parseInt(str, 10);
-
-				if (Win.isNaN(num)) {
-					str = str.replace(/\D/g, '');
-					num = Win.parseInt(str, 10);
-				}
-
-				return (!Win.isNaN(num)) ? num : null;
-			};
-
-			proto.cut = function (head, tail) {
-				var str = this[0];
-
-				if (typeof head === 'undefined') {
-					return str.substring(1, str.length-1);
-				}
-				
-				if (head) {
-					str = str.substr(head);
-				}
-
-				if (tail) {
-					str = str.substr(0, str.length-tail);
-				}
-
-				return str;
-			};
-
-			proto.trim = function (head, tail) {
-				var xStr,
-					headLen,
-					tailLen,
-					tailType,
-					rgx
-				;
-
-				var headType  = type(head);
-				var str       = this[0];
-				var done_both = 0;
-				var rgxStr    = '';
-
-				/* Deal Breaker */ if (headType === 'undefined') {return null;}
-
-				// pass 1 pattern for both
-				if (tail === true) {
-					tail = head;
-				}
-
-				// head is a string
-				if (headType === 'string') {
-					headLen = head.length;
-					str = (this.first(headLen) === head) && this.cut(headLen);
-
-					done_both += 1;
-				}
-				else if (headType === 'regexp') {
-					head = _helpers.rgx2str(head);
-				}
-
-				tailType = type(tail);
-
-				// tail is a string
-				if (tailType === 'string') {
-					tailLen = tail.length;
-					xStr = new X.xType.string(str);
-					str  = (xStr.last(tailLen) === tail) && xStr.cut(0, tailLen);
-
-					done_both += 1;
-				}
-				else if (tailType === 'regexp') {
-					tail = _helpers.rgx2str(tail);
-				}
-
-				// done. both are strings
-				if (done_both === 2) {
-					return str;
-				}
-
-				// add ^___|___$ where necessary
-				rgxStr += (head) ? ('^' + head)       : '';
-				rgxStr += (head) ? ('|' + tail + '$') : (tail + '$');
-
-				// rgxStr to rgx
-				rgx = new RegExp(rgxStr, 'g');
-
-				return str.replace(rgx, '');
-			};
-
-			proto.isIn = function (here) {
-				var hereType = type(here);
-
-				if (hereType === 'array') {
-					return (here.indexOf(this[0]) > -1);
-				}
-				else if (hereType === 'string') {
-					return (here.indexOf(this[0]) > -1);
-				}
-
-				return null;
-			};
-
-			proto.cap = function (wordSplit) {
-				var strArr;
-				var str    = this[0];
-				var newStr = '';
-
-				if (wordSplit) {
-					strArr = str.split(wordSplit);
-					
-					strArr.forEach(function (word) {
-						newStr += new X.xType.string(word).cap() + wordSplit;
-					});
-
-					newStr = new X.xType.string(newStr).cut(0, wordSplit.length);
-					return newStr;
-				}
-
-				// only first letter
-				newStr = str.charAt(0).toUpperCase() + this.cut(1);
-
+				newStr = new X.S(newStr).cut(0, wordSplit.length);
 				return newStr;
-			};
+			}
 
-			proto.isCap = function(i) {
-				var letter;
+			// only first letter
+			newStr = str.charAt(0).toUpperCase() + this.cut(1);
 
-				i      = i || 0;
-				letter = this[0].charAt(i);
+			return newStr;
+		};
 
-				if (letter && /[A-Z]/.test(letter)) {
-					return true;
+		proto.isCap = function(i) {
+			var letter;
+
+			i      = i || 0;
+			letter = this[0].charAt(i);
+
+			if (letter && /[A-Z]/.test(letter)) {
+				return true;
+			}
+
+			return false;
+		};
+
+		proto.split = function (by) {
+			var arr;
+			var str  = this[0];
+
+			if (this.first() === by) {
+				this[0] = this.cut(1);
+			}
+
+			if (this.last() === by) {
+				str = this.cut(0, 1);
+			}
+
+			arr = str.split(by);
+
+			return arr;
+		};
+
+		proto.splitOnce = function(by) {
+			var str   = this[0];
+			var i     = str.indexOf(by);
+			var first = this.first(i);
+			var last  = new X.S(str).cut(i + 1);
+
+			return [first, last];
+		};
+
+		proto.has = function (x) {
+			var match;
+			var str   = this[0];
+			var xType = type(x);
+
+			if (xType === 'string') {
+				return (str.indexOf(x) > -1);
+			}
+			else if (xType === 'regexp') {
+				match = str.match(x);
+				return x.test(str);
+			}
+		};
+
+		proto.toObj = function (pairSplit, keyValSplit) {
+			var pairs;
+			var obj = {};
+			var str = win.decodeURIComponent(this[0]);
+
+			pairSplit   = pairSplit   || '&';
+			keyValSplit = keyValSplit || '=';
+			
+			pairSplit   = (typeof pairSplit   === 'string') ? new RegExp(pairSplit)   : pairSplit  ;
+			keyValSplit = (typeof keyValSplit === 'string') ? new RegExp(keyValSplit) : keyValSplit;
+
+			pairs = new X.S(str).split(pairSplit);
+
+			pairs.forEach(function(pair) {
+				var item = pair.split(keyValSplit);
+
+				if (item.length > 2) {
+					obj[item.shift()] = item.join(keyValSplit.toString().replace(/^(\/)|(\/[gim]*)$/g, ''));
+				} 
+				else {
+					obj[item[0]] = item[1];
 				}
+			});
 
-				return false;
-			};
+			return obj;
+		};
 
-			proto.split = function (by) {
-				var arr;
-				var str  = this[0];
+		return function (str) {
+			this.Xtndr = true;
+			this[0]    = str;
+			this.len   = str.length;
 
-				if (this.first() === by) {
-					this[0] = this.cut(1);
-				}
+			return this;
+		};
+	})(); // string
 
-				if (this.last() === by) {
-					str = this.cut(0, 1);
-				}
-
-				arr = str.split(by);
-
-				return arr;
-			};
-
-			proto.splitOnce = function(by) {
-				var str   = this[0];
-				var i     = str.indexOf(by);
-				var first = this.first(i);
-				var last  = new X.xType.string(str).cut(i + 1);
-
-				return [first, last];
-			};
-
-			proto.has = function (x) {
-				var match;
-				var str   = this[0];
-				var xType = type(x);
-
-				if (xType === 'string') {
-					return (str.indexOf(x) > -1);
-				}
-				else if (xType === 'regexp') {
-					match = str.match(x);
-					return x.test(str);
-				}
-			};
-
-			proto.toObj = function (pairSplit, keyValSplit) {
-				var pairs;
-				var obj = {};
-				var str = win.decodeURIComponent(this[0]);
-
-				pairSplit   = pairSplit   || '&';
-				keyValSplit = keyValSplit || '=';
-				
-				pairSplit   = (typeof pairSplit   === 'string') ? new RegExp(pairSplit)   : pairSplit  ;
-				keyValSplit = (typeof keyValSplit === 'string') ? new RegExp(keyValSplit) : keyValSplit;
-
-				pairs = new X.xType.string(str).split(pairSplit);
-
-				pairs.forEach(function(pair) {
-					var item = pair.split(keyValSplit);
-
-					if (item.length > 2) {
-						obj[item.shift()] = item.join(keyValSplit.toString().replace(/^(\/)|(\/[gim]*)$/g, ''));
-					} 
-					else {
-						obj[item[0]] = item[1];
-					}
-				});
-
-				return obj;
-			};
-
-			return XS;
-		})(), // string
 /* 
   %%%%   %%%%%   %%%%%    %%%%   %%  %% 
  %%  %%  %%  %%  %%  %%  %%  %%   %%%%  
@@ -470,166 +469,165 @@
  %%  %%  %%  %%  %%  %%  %%  %%    %%   
  %%  %%  %%  %%  %%  %%  %%  %%    %%   
  */
-		array : (function () {
-			
-			function XA (arr) {
-				this.Xtndr = true;
-				this[0]    = arr;
-				this.len   = arr.length;
 
-				return this;
+	Xtndr.A : (function () {
+		
+		var X     = Xtndr;
+		var type  = X.type;
+		var proto = XA.prototype;
+
+		proto.X = function (i) {
+			var item = this[0][i];
+
+			return (item) ? X(item) : null;
+		};
+
+		proto.isEmpty = function() {
+			return (this.len === 0);
+		};
+
+		proto.forEach = function (fn) {
+			var item, i, returned;
+
+			var newArr = [];
+			var arr    = this[0];
+			var size   = arr.length;
+			
+			for (i = 0; i < size; i+=1) {
+				item = arr[i];
+
+				returned = fn.call(this, item, i);
+
+				if (returned === true){
+					continue;
+				}
+				else if (returned === false) {
+					break;
+				}
+				else if (typeof returned !== 'undefined') {
+					newArr.push(returned);
+				}
 			}
 
-			var X     = Xtndr;
-			var type  = X.type;
-			var proto = XA.prototype;
+			if (newArr !== []) {
+				return newArr;
+			}
+		};	
 
-			proto.X = function (i) {
-				var item = this[0][i];
+		proto._forEach = function (fn) {
+			var item, i, returned;
 
-				return (item) ? X(item) : null;
-			};
+			var newArr = [];
+			var arr    = this[0];
+			var size   = arr.length;
+			
+			for (i = arr.length-1; i >= 0; i-=1) {
+				item = arr[i];
 
-			proto.isEmpty = function() {
-				return (this.len === 0);
-			};
+				returned = fn.call(this, item, i);
 
-			proto.forEach = function (fn) {
-				var item, i, returned;
+				if (returned === true){
+					continue;
+				}
+				else if (returned === false) {
+					break;
+				}
+				else if (typeof returned !== 'undefined') {
+					newArr.push(returned);
+				}
+			}
 
-				var newArr = [];
-				var arr    = this[0];
-				var size   = arr.length;
+			if (newArr !== []) {
+				return newArr;
+			}
+		};
+
+		proto.f_forEach = function (fn) {
+			var item, i, returned;
+
+			var newArr = [];
+			var arr    = this[0];
+			var size   = arr.length;
+
+			for (i = arr.length-1; i >= 0; i-=1) {
+				item = arr[i];
+
+				fn.call(this, item, i);
+			}
+		};
+
+		proto.has = function (x) {
+			return (this[0].indexOf(x) > -1);
+		};
+
+		proto.remove = function (i, howMany) {
+			var orgArr;
+			var arr = this[0];
+
+			/* Deal Breaker */ if (!arr[i]) {return null;}
+
+			orgArr  = arr.slice(0);
+			howMany = howMany || 1;
+
+			if (i === 0 && howMany === 1) {
+				arr.shift();
+			}
+			else {
+				arr.splice(i, howMany);
+			}
+
+			this[0] = orgArr;
+
+			return arr;
+		};
+
+		proto.add = function (what, where) {
+			var arr    = this[0];
+			var orgArr = arr.slice(0);
+
+			if (where) {
+				if (where === 0) {
+					return arr.unshift(what);
+				}
+
+				arr.splice(where, 0, what);
+			}
+			else {
+				arr.push(what);
+			}
+
+			this[0] = orgArr;
+
+			return arr;
+		};
+
+		proto.first = function (add) {
+			var arr    = this[0];
+			var orgArr = arr.slice(0);
+
+			if (add) {
+				arr.unshift(add);
 				
-				for (i = 0; i < size; i+=1) {
-					item = arr[i];
-
-					returned = fn.call(this, item, i);
-
-					if (returned === true){
-						continue;
-					}
-					else if (returned === false) {
-						break;
-					}
-					else if (typeof returned !== 'undefined') {
-						newArr.push(returned);
-					}
-				}
-
-				if (newArr !== []) {
-					return newArr;
-				}
-			};	
-
-			proto._forEach = function (fn) {
-				var item, i, returned;
-
-				var newArr = [];
-				var arr    = this[0];
-				var size   = arr.length;
-				
-				for (i = arr.length-1; i >= 0; i-=1) {
-					item = arr[i];
-
-					returned = fn.call(this, item, i);
-
-					if (returned === true){
-						continue;
-					}
-					else if (returned === false) {
-						break;
-					}
-					else if (typeof returned !== 'undefined') {
-						newArr.push(returned);
-					}
-				}
-
-				if (newArr !== []) {
-					return newArr;
-				}
-			};
-
-			proto.f_forEach = function (fn) {
-				var item, i, returned;
-
-				var newArr = [];
-				var arr    = this[0];
-				var size   = arr.length;
-
-				for (i = arr.length-1; i >= 0; i-=1) {
-					item = arr[i];
-
-					fn.call(this, item, i);
-				}
-			};
-
-			proto.has = function (x) {
-				return (this[0].indexOf(x) > -1);
-			};
-
-			proto.remove = function (i, howMany) {
-				var orgArr;
-				var arr = this[0];
-
-				/* Deal Breaker */ if (!arr[i]) {return null;}
-
-				orgArr  = arr.slice(0);
-				howMany = howMany || 1;
-
-				if (i === 0 && howMany === 1) {
-					arr.shift();
-				}
-				else {
-					arr.splice(i, howMany);
-				}
-
 				this[0] = orgArr;
 
 				return arr;
-			};
+			}
 
-			proto.add = function (what, where) {
-				var arr    = this[0];
-				var orgArr = arr.slice(0);
+			return arr[0];
+		};
 
-				if (where) {
-					if (where === 0) {
-						return arr.unshift(what);
-					}
+		proto.last = function () {
+			return this[0][this.len-1];
+		};
 
-					arr.splice(where, 0, what);
-				}
-				else {
-					arr.push(what);
-				}
+		return function (arr) {
+			this.Xtndr = true;
+			this[0]    = arr;
+			this.len   = arr.length;
 
-				this[0] = orgArr;
-
-				return arr;
-			};
-
-			proto.first = function (add) {
-				var arr    = this[0];
-				var orgArr = arr.slice(0);
-
-				if (add) {
-					arr.unshift(add);
-					
-					this[0] = orgArr;
-
-					return arr;
-				}
-
-				return arr[0];
-			};
-
-			proto.last = function () {
-				return this[0][this.len-1];
-			};
-
-			return XA;
-		})(), // array
+			return this;
+		};
+	})(); // array
 
 /* 
   %%%%   %%%%%   %%%%%%  %%%%%%   %%%%   %%%%%% 
@@ -638,73 +636,71 @@
  %%  %%  %%  %%  %%  %%  %%      %%  %%    %%   
   %%%%   %%%%%    %%%%   %%%%%%   %%%%     %%   
  */
-		object : (function () {
-			function XO (obj) {
-				this.Xtndr = true;
-				this[0]    = obj;
+ 
+	Xtndr.O : (function () {
+		var X     = Xtndr;
+		var proto = XO.prototype;
 
-				return this;
+		proto.X = function (key) {
+			var item = this[0][key];
+
+			return (item) ? X(item) : null;
+		};
+
+		proto.isEmpty = function () {
+			var key;
+
+			var obj = this[0];
+
+			var hasOwnProp = Object.prototype.hasOwnProperty;
+
+			for (key in obj) {
+				if (hasOwnProp.call(obj, key)) {
+					return false;
+				}
+			}
+			return true;
+		};
+
+		proto.forIn = function (fn) {
+			var key, value;
+
+			var obj = this[0];
+			var hasOwnProp = Object.prototype.hasOwnProperty;
+
+			for (key in obj) {
+				if (hasOwnProp.call(obj, key)) {
+					value = obj[key];
+					fn.apply(obj, [key, value]);
+				}
 			}
 
-			var X     = Xtndr;
-			var proto = XO.prototype;
+			return this;
+		};
 
-			proto.X = function (key) {
-				var item = this[0][key];
+		proto.toStr = function (keyValSplit, pairSplit) {
+			var str     = '';
+			var obj     = this[0];
 
-				return (item) ? X(item) : null;
-			};
+			keyValSplit = keyValSplit || '=';
+			pairSplit   = pairSplit   || '&';
 
-			proto.isEmpty = function () {
-				var key;
+			this.forIn(function (key, value) {
+				str += key + keyValSplit + value + pairSplit;
+			});
 
-				var obj = this[0];
+			str = new X.S(str).cut(0, pairSplit.length);
 
-				var hasOwnProp = Object.prototype.hasOwnProperty;
+			return str;
+		};
 
-				for (key in obj) {
-					if (hasOwnProp.call(obj, key)) {
-						return false;
-					}
-				}
-				return true;
-			};
+		return function (obj) {
+			this.Xtndr = true;
+			this[0]    = obj;
 
-			proto.forIn = function (fn) {
-				var key, value;
-
-				var obj = this[0];
-				var hasOwnProp = Object.prototype.hasOwnProperty;
-
-				for (key in obj) {
-					if (hasOwnProp.call(obj, key)) {
-						value = obj[key];
-						fn.apply(obj, [key, value]);
-					}
-				}
-
-				return this;
-			};
-
-			proto.toStr = function (keyValSplit, pairSplit) {
-				var str     = '';
-				var obj     = this[0];
-
-				keyValSplit = keyValSplit || '=';
-				pairSplit   = pairSplit   || '&';
-
-				this.forIn(function (key, value) {
-					str += key + keyValSplit + value + pairSplit;
-				});
-
-				str = new X.xType.string(str).cut(0, pairSplit.length);
-
-				return str;
-			};
-
-			return XO;
-		})(), // object
-	};
+			return this;
+		};
+	})(); // object
 
 //-------------------------------------------
 // Expose
