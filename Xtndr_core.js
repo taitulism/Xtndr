@@ -6,10 +6,9 @@
 //-------------------------------------------	
 
 	var Xtndr = function (something) {
-		var type;
-
-		type = Xtndr.type(something);
-		type = type[0].toUpperCase;
+		var type = Xtndr.type(something);
+		
+		type = type[0].toUpperCase();
 
 		return new Xtndr[type](something);
 	};
@@ -106,7 +105,16 @@
  %%  %%   %%%%   %%   %%  %%%%%   %%%%%%  %%  %% 
  */
 
-	Xtndr.N : (function () {
+	Xtndr.N = (function () {
+
+		function XN (num) {
+			/* Deal Breaker */ if (win.isNaN(num)) {return null;}
+			
+			this.Xtndr = true;
+			this[0]    = num;
+
+			return this;
+		}
 
 		var proto = XN.prototype;
 			
@@ -181,14 +189,7 @@
 			return str;
 		};
 
-		return function (num) {
-			/* Deal Breaker */ if (win.isNaN(num)) {return null;}
-			
-			this.Xtndr = true;
-			this[0]    = num;
-
-			return this;
-		};
+		return XN;
 	})(); // number
 
 /* 
@@ -199,7 +200,15 @@
   %%%%     %%    %%  %%  %%%%%%  %%  %%   %%%%  
  */
 
-	Xtndr.S : (function () {
+	Xtndr.S = (function () {
+		
+		function XS (str) {
+			this.Xtndr = true;
+			this[0]    = str;
+			this.len   = str.length;
+
+			return this;
+		}
 
 		var X        = Xtndr;
 		var type     = X.type;
@@ -453,13 +462,7 @@
 			return obj;
 		};
 
-		return function (str) {
-			this.Xtndr = true;
-			this[0]    = str;
-			this.len   = str.length;
-
-			return this;
-		};
+		return XS;
 	})(); // string
 
 /* 
@@ -470,8 +473,16 @@
  %%  %%  %%  %%  %%  %%  %%  %%    %%   
  */
 
-	Xtndr.A : (function () {
+	Xtndr.A = (function () {
 		
+		function XA (arr) {
+			this.Xtndr = true;
+			this[0]    = arr;
+			this.len   = arr.length;
+
+			return this;
+		}
+
 		var X     = Xtndr;
 		var type  = X.type;
 		var proto = XA.prototype;
@@ -620,13 +631,7 @@
 			return this[0][this.len-1];
 		};
 
-		return function (arr) {
-			this.Xtndr = true;
-			this[0]    = arr;
-			this.len   = arr.length;
-
-			return this;
-		};
+		return XA;
 	})(); // array
 
 /* 
@@ -636,8 +641,16 @@
  %%  %%  %%  %%  %%  %%  %%      %%  %%    %%   
   %%%%   %%%%%    %%%%   %%%%%%   %%%%     %%   
  */
- 
-	Xtndr.O : (function () {
+
+	Xtndr.O = (function () {
+
+		function XO (obj) {
+			this.Xtndr = true;
+			this[0]    = obj;
+
+			return this;
+		}
+
 		var X     = Xtndr;
 		var proto = XO.prototype;
 
@@ -694,12 +707,7 @@
 			return str;
 		};
 
-		return function (obj) {
-			this.Xtndr = true;
-			this[0]    = obj;
-
-			return this;
-		};
+		return XO;
 	})(); // object
 
 //-------------------------------------------
